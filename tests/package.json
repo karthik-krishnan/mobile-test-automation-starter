@@ -1,0 +1,18 @@
+{
+  "name": "appium-validation-tests",
+  "version": "1.0.0",
+  "description": "Validation tests for Android + iOS Appium setup",
+  "type": "module",
+  "scripts": {
+    "test:android": "wdio run wdio.android.conf.js",
+    "test:ios":     "wdio run wdio.ios.conf.js",
+    "test":         "npm run test:android",
+    "test:ci":      "wdio run wdio.android.conf.js --logLevel error"
+  },
+  "dependencies": {
+    "@wdio/cli":            "^8.39.0",
+    "@wdio/local-runner":   "^8.39.0",
+    "@wdio/mocha-framework":"^8.39.0",
+    "@wdio/spec-reporter":  "^8.39.0"
+  }
+}

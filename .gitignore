@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+tests/node_modules/
+
+# Test artefacts
+tests/screenshots/
+logs/*.log
+
+# macOS
+.DS_Store
+
+# Appium / emulator runtime files (local only)
+/tmp/appium.log
+/tmp/android-emulator.log
+/tmp/appium-local.pids
+/tmp/ios-udid.txt
+
+# Environment overrides
+.env
