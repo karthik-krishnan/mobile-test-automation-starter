@@ -18,6 +18,16 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to test'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - both
+          - android
+          - ios
 
 jobs:
 
@@ -26,6 +36,10 @@ jobs:
     name: Android Emulator Tests
     runs-on: [self-hosted, linux, appium-android]
     timeout-minutes: 30
+    if: >
+      github.event_name != 'workflow_dispatch' ||
+      inputs.platform == 'android' ||
+      inputs.platform == 'both'
 
     steps:
       - name: Checkout
@@ -115,6 +129,10 @@ jobs:
     name: iOS Simulator Tests
     runs-on: macos-latest
     timeout-minutes: 30
+    if: >
+      github.event_name != 'workflow_dispatch' ||
+      inputs.platform == 'ios' ||
+      inputs.platform == 'both'
 
     steps:
       - name: Checkout
@@ -206,10 +224,19 @@ jobs:
     steps:
       - name: Check results
         run: |
-          echo "Android: ${{ needs.android.result }}"
-          echo "iOS:     ${{ needs.ios.result }}"
-          if [[ "${{ needs.android.result }}" != "success" || "${{ needs.ios.result }}" != "success" ]]; then
-            echo "One or more jobs failed."
+          ANDROID="${{ needs.android.result }}"
+          IOS="${{ needs.ios.result }}"
+          echo "Android: $ANDROID"
+          echo "iOS:     $IOS"
+
+          # 'skipped' means the job was excluded by the platform input — that's fine.
+          # Only 'failure' or 'cancelled' should fail the overall run.
+          if [[ "$ANDROID" == "failure" || "$ANDROID" == "cancelled" ]]; then
+            echo "Android job failed."
             exit 1
           fi
-          echo "All tests passed."
+          if [[ "$IOS" == "failure" || "$IOS" == "cancelled" ]]; then
+            echo "iOS job failed."
+            exit 1
+          fi
+          echo "All selected tests passed."
