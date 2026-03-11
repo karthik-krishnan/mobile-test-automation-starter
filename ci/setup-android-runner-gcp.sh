@@ -73,8 +73,8 @@ fi
 # =============================================================================
 info "Step 2/6 — Node.js"
 # =============================================================================
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - -qq
-sudo apt-get install -y nodejs -qq
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs -q
 ok "Node.js $(node --version)"
 
 # =============================================================================
