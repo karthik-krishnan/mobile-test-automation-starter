@@ -132,15 +132,16 @@ APPIUM_PORT=4724 npm run test:android
 
 ## CI Pipeline
 
-The pipeline runs Android and iOS tests **in parallel** on every push to `main`. The workflow is defined in `.github/workflows/ci.yml`.
+The pipeline runs Android and iOS tests **in parallel** and is triggered manually. The workflow is defined in `.github/workflows/ci.yml`.
 
 ### Architecture
 
 ```
-GitHub push
+Manual trigger (workflow_dispatch)
     │
     ├── Android job ──► GCP Compute Engine (n2-standard-4, Ubuntu 22.04, KVM)
     │                   Self-hosted runner — starts emulator → Appium → tests
+    │                   System image: google_apis;x86_64 (must match host arch)
     │
     └── iOS job ──────► GitHub-hosted macOS runner (macos-latest)
                         Free for public repos — Xcode + simulators pre-installed
@@ -197,9 +198,11 @@ No setup is needed for iOS — GitHub's macOS runners handle everything automati
 
 ### Triggering the pipeline
 
-Push to `main` — the workflow starts automatically. You can also trigger it manually:
+The workflow only runs on manual dispatch — it does **not** trigger automatically on push.
 
 GitHub repo → **Actions** → **Appium Tests** → **Run workflow**
+
+Select the platform to test: `android`, `ios`, or `both`.
 
 ### Estimated cost
 
