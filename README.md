@@ -164,7 +164,8 @@ gcloud compute instances create appium-android-runner \
   --image-family=ubuntu-2204-lts \
   --image-project=ubuntu-os-cloud \
   --boot-disk-size=60GB \
-  --boot-disk-type=pd-ssd
+  --boot-disk-type=pd-ssd \
+  --tags=github-runner
 ```
 
 The `--enable-nested-virtualization` flag is what allows the Android emulator to use KVM acceleration inside the VM. Without it the emulator will be extremely slow.
@@ -185,7 +186,7 @@ curl -O https://raw.githubusercontent.com/karthik-krishnan/appium-test-environme
 bash setup-android-runner-gcp.sh <YOUR_RUNNER_TOKEN>
 ```
 
-The script installs the Android SDK, emulator, Node.js, Appium, and the GitHub Actions runner agent — then registers it as a systemd service so it survives reboots.
+The script installs the Android SDK, emulator, Node.js, Appium, and the GitHub Actions runner agent — then registers it as a systemd service so it survives reboots. It takes about **10 minutes** to complete.
 
 #### 4. Verify the runner is online
 
@@ -193,6 +194,14 @@ GitHub repo → **Settings** → **Actions** → **Runners**
 
 You should see one runner with status **Idle**:
 - `appium-android-gcp-*` (labels: `self-hosted`, `linux`, `appium-android`)
+
+If the runner shows **Offline**, SSH into the instance and check the service:
+
+```bash
+cd ~/actions-runner
+sudo ./svc.sh status   # check current state
+sudo ./svc.sh start    # start if stopped
+```
 
 No setup is needed for iOS — GitHub's macOS runners handle everything automatically.
 
