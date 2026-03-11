@@ -32,7 +32,7 @@ set -euo pipefail
 RUNNER_TOKEN="${1:-}"
 GITHUB_REPO="https://github.com/karthik-krishnan/appium-test-environment-sandbox"
 ANDROID_API="36"
-ANDROID_SYSTEM_IMAGE="system-images;android-${ANDROID_API};google_apis;arm64-v8a"
+ANDROID_SYSTEM_IMAGE="system-images;android-${ANDROID_API};google_apis;x86_64"
 ANDROID_HOME="$HOME/android-sdk"
 RUNNER_DIR="$HOME/actions-runner"
 
