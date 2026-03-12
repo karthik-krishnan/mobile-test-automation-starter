@@ -1,6 +1,8 @@
 # Mobile Test Environment
 
-Local setup for running Appium tests against an **Android emulator** and **iOS Simulator** on macOS. A single script starts everything; two commands run the tests.
+Local setup for running Appium tests against an **Android emulator** and **iOS Simulator**. A single script starts everything; two commands run the tests.
+
+> **iOS Simulator is macOS only.** On Windows, only Android tests are supported.
 
 ---
 
@@ -8,28 +10,58 @@ Local setup for running Appium tests against an **Android emulator** and **iOS S
 
 Install these **once** before running anything. Each tool only needs to be installed one time.
 
-### 1. Android Studio
+### macOS prerequisites
+
+#### 1. Android Studio
 Downloads the Android SDK, emulator, and all required command-line tools.
 
 👉 **Download:** https://developer.android.com/studio
 
 After installing, open Android Studio once and let it finish its first-launch SDK setup before running `local-setup.sh`.
 
----
-
-### 2. Xcode
+#### 2. Xcode
 Required for the iOS Simulator and the `xcrun` command-line tools.
 
 👉 **Install:** Open the **Mac App Store** and search for **Xcode**
 
 After installing, open Xcode once to accept the licence agreement. You can quit it immediately after.
 
----
-
-### 3. Node.js (LTS)
+#### 3. Node.js (LTS)
 Required to run the test runner (WebdriverIO).
 
 👉 **Download:** https://nodejs.org — click the large **LTS** button
+
+---
+
+### Windows prerequisites
+
+#### 1. Android Studio
+Downloads the Android SDK, emulator, and all required command-line tools.
+
+👉 **Download:** https://developer.android.com/studio
+
+After installing, open Android Studio once and let it finish its first-launch SDK setup. This is what downloads the emulator and SDK tools the script needs.
+
+#### 2. Node.js (LTS)
+Required to run the test runner (WebdriverIO).
+
+👉 **Download:** https://nodejs.org — click the large **LTS** button
+
+During install, leave all default options checked.
+
+#### 3. PowerShell (already installed on Windows 10/11)
+PowerShell comes pre-installed on Windows 10 and 11 — you don't need to download anything. To open it:
+
+- Press **Windows key**, type `PowerShell`, right-click **Windows PowerShell** and choose **Run as administrator**
+
+#### 4. Allow PowerShell scripts to run (one-time)
+Windows blocks `.ps1` scripts by default. Run this **once** in the PowerShell window you opened above:
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+When prompted, type `Y` and press Enter. You only need to do this once — it allows locally created scripts to run while still blocking untrusted scripts from the internet.
 
 ---
 
@@ -40,12 +72,17 @@ Required to run the test runner (WebdriverIO).
 bash local-setup.sh
 ```
 
-**Windows (PowerShell):**
+**Windows (PowerShell — open as Administrator, navigate to the repo folder first):**
 ```powershell
 .\local-setup.ps1
 ```
 
 > Note: iOS Simulator is macOS only. The Windows script runs Android only.
+
+To navigate to the repo folder in PowerShell, use `cd` followed by the path, for example:
+```powershell
+cd C:\Users\YourName\Documents\appium-test-environment-sandbox
+```
 
 This will:
 - Start (or reuse) an Android emulator
