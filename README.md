@@ -35,15 +35,21 @@ Required to run the test runner (WebdriverIO).
 
 ## Start the Environment
 
-Run this from the root of the repo:
-
+**macOS:**
 ```bash
 bash local-setup.sh
 ```
 
+**Windows (PowerShell):**
+```powershell
+.\local-setup.ps1
+```
+
+> Note: iOS Simulator is macOS only. The Windows script runs Android only.
+
 This will:
 - Start (or reuse) an Android emulator
-- Start (or reuse) an iOS Simulator
+- Start (or reuse) an iOS Simulator (macOS only)
 - Install Appium and its drivers if not already installed
 - Start the Appium server on port 4723
 
@@ -95,8 +101,14 @@ Each suite runs 3 checks:
 
 ## Stop Everything
 
+**macOS:**
 ```bash
 bash local-setup.sh stop
+```
+
+**Windows:**
+```powershell
+.\local-setup.ps1 stop
 ```
 
 This kills the Appium server and any emulator/simulator processes started by the setup script.
