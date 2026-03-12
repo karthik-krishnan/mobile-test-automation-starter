@@ -120,48 +120,12 @@ if (-not $ANDROID_HOME) {
 
 $env:ANDROID_HOME     = $ANDROID_HOME
 $env:ANDROID_SDK_ROOT = $ANDROID_HOME
-
-$emulatorDir      = Join-Path $ANDROID_HOME "emulator"
-$platformToolsDir = Join-Path $ANDROID_HOME "platform-tools"
-
-# cmdline-tools can live at 'latest\bin' or a version-numbered folder - find whichever exists
-$cmdlineToolsDir = $null
-foreach ($candidate in @("cmdline-tools\latest\bin", "cmdline-tools\bin")) {
-    $p = Join-Path $ANDROID_HOME $candidate
-    if (Test-Path $p) { $cmdlineToolsDir = $p; break }
-}
-if (-not $cmdlineToolsDir) {
-    # Fall back to any versioned sub-folder e.g. cmdline-tools\11.0\bin
-    $cmdlineToolsDir = Get-ChildItem (Join-Path $ANDROID_HOME "cmdline-tools") -Recurse -Filter "sdkmanager.bat" -ErrorAction SilentlyContinue |
-        Select-Object -First 1 | ForEach-Object { $_.DirectoryName }
-}
-
-# -- JAVA_HOME: use Android Studio's bundled JDK if JAVA_HOME not already set --
-if (-not $env:JAVA_HOME) {
-    $javaHomeCandidates = @(
-        "C:\Program Files\Android\Android Studio\jbr",
-        "C:\Program Files\Android\Android Studio\jre"
-    )
-    foreach ($candidate in $javaHomeCandidates) {
-        if (Test-Path (Join-Path $candidate "bin\java.exe")) {
-            $env:JAVA_HOME = $candidate
-            break
-        }
-    }
-    if (-not $env:JAVA_HOME) {
-        Write-Err "JAVA_HOME is not set and Android Studio's bundled JDK was not found."
-        Write-Info "Please install Android Studio and ensure it has finished its first-launch setup."
-        Write-Info "Or install JDK manually: https://adoptium.net"
-        exit 1
-    }
-}
-$env:Path = "$env:JAVA_HOME\bin;$emulatorDir;$platformToolsDir;$cmdlineToolsDir;$env:Path"
+$emulatorDir          = Join-Path $ANDROID_HOME "emulator"
+$platformToolsDir     = Join-Path $ANDROID_HOME "platform-tools"
+$cmdlineToolsDir      = Join-Path $ANDROID_HOME "cmdline-tools\latest\bin"
+$env:Path             = "$emulatorDir;$platformToolsDir;$cmdlineToolsDir;$env:Path"
 
 Write-Ok "Android Studio SDK found at $ANDROID_HOME"
-Write-Ok "JAVA_HOME: $env:JAVA_HOME"
-Write-Info "  emulator:       $emulatorDir"
-Write-Info "  platform-tools: $platformToolsDir"
-Write-Info "  cmdline-tools:  $cmdlineToolsDir"
 
 # =============================================================================
 # STEP 2 - Android emulator

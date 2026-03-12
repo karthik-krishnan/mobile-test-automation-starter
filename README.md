@@ -4,6 +4,8 @@ Local setup for running Appium tests against an **Android emulator** and **iOS S
 
 > **iOS Simulator is macOS only.** On Windows, only Android tests are supported.
 
+> **Windows requires a native installation.** The Android Emulator needs hardware virtualisation (SVM/Hyper-V) which is not available inside virtual machines (UTM, VirtualBox, VMware, etc.). Run this on a physical Windows machine only.
+
 ---
 
 ## Prerequisites
