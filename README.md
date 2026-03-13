@@ -198,8 +198,8 @@ The pipeline runs Android and iOS tests **in parallel** and is triggered manuall
 ```
 Manual trigger (workflow_dispatch)
     │
-    ├── Android job ──► GCP Compute Engine (n2-standard-4, Ubuntu 22.04, KVM)
-    │                   Self-hosted runner — starts emulator → Appium → tests
+    ├── Android job ──► Self-hosted Linux runner (GCP / AWS / Azure)
+    │                   Starts emulator → Appium → tests
     │                   System image: google_apis;x86_64 (must match host arch)
     │
     └── iOS job ──────► GitHub-hosted macOS runner (macos-latest)
@@ -208,11 +208,17 @@ Manual trigger (workflow_dispatch)
 
 iOS Simulator requires macOS. Since this repo is public, GitHub's hosted macOS runners are free and require zero infrastructure to manage.
 
+The Android runner can be hosted on any cloud provider — setup scripts are provided for GCP, AWS, and Azure. All three register with the same runner labels so the CI workflow works without any changes.
+
 ### One-time setup
 
-#### 1. Create the GCP instance for Android
+#### 1. Provision the Android runner VM
 
-Run this from your local machine (requires [Google Cloud CLI](https://cloud.google.com/sdk/docs/install)):
+Choose your cloud provider and follow the steps below. The key requirement for all three is that the VM supports **nested virtualisation (KVM)** — this is what allows the Android emulator to run efficiently inside a cloud VM.
+
+---
+
+**Option A — GCP** (requires [Google Cloud CLI](https://cloud.google.com/sdk/docs/install))
 
 ```bash
 gcloud compute instances create appium-android-runner \
@@ -227,7 +233,53 @@ gcloud compute instances create appium-android-runner \
   --tags=github-runner
 ```
 
-The `--enable-nested-virtualization` flag is what allows the Android emulator to use KVM acceleration inside the VM. Without it the emulator will be extremely slow.
+SSH in: `gcloud compute ssh appium-android-runner --zone=us-central1-a`
+
+Setup script: `ci/setup-android-runner-gcp.sh`
+
+---
+
+**Option B — AWS** (requires [AWS CLI](https://aws.amazon.com/cli/))
+
+```bash
+aws ec2 run-instances \
+  --image-id ami-0c7217cdde317cfec \
+  --instance-type m5.xlarge \
+  --key-name YOUR_KEY_PAIR_NAME \
+  --security-group-ids YOUR_SECURITY_GROUP_ID \
+  --block-device-mappings '[{"DeviceName":"/dev/sda1","Ebs":{"VolumeSize":60,"VolumeType":"gp3"}}]' \
+  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=appium-android-runner}]' \
+  --region us-east-1
+```
+
+> `ami-0c7217cdde317cfec` is Ubuntu 22.04 LTS in us-east-1. Find the right AMI for your region at [cloud-images.ubuntu.com](https://cloud-images.ubuntu.com/locator/ec2/).
+
+SSH in: `ssh -i YOUR_KEY.pem ubuntu@<INSTANCE_PUBLIC_IP>`
+
+Setup script: `ci/setup-android-runner-aws.sh`
+
+---
+
+**Option C — Azure** (requires [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli))
+
+```bash
+az group create --name appium-runner-rg --location eastus
+
+az vm create \
+  --resource-group appium-runner-rg \
+  --name appium-android-runner \
+  --image Ubuntu2204 \
+  --size Standard_D4s_v3 \
+  --admin-username azureuser \
+  --generate-ssh-keys \
+  --os-disk-size-gb 60
+```
+
+SSH in: `ssh azureuser@$(az vm show -d -g appium-runner-rg -n appium-android-runner --query publicIps -o tsv)`
+
+Setup script: `ci/setup-android-runner-azure.sh`
+
+---
 
 #### 2. Get a runner registration token
 
@@ -235,14 +287,22 @@ GitHub repo → **Settings** → **Actions** → **Runners** → **New self-host
 
 Copy the token shown (it expires after 1 hour).
 
-#### 3. SSH into the GCP instance and run the setup script
+#### 3. SSH into the VM and run the setup script
+
+Once inside the VM, download and run the setup script for your provider:
 
 ```bash
-gcloud compute ssh appium-android-runner --zone=us-central1-a
-
-# Once inside the instance:
+# GCP
 curl -O https://raw.githubusercontent.com/karthik-krishnan/mobile-test-automation-starter/main/ci/setup-android-runner-gcp.sh
 bash setup-android-runner-gcp.sh <YOUR_RUNNER_TOKEN>
+
+# AWS
+curl -O https://raw.githubusercontent.com/karthik-krishnan/mobile-test-automation-starter/main/ci/setup-android-runner-aws.sh
+bash setup-android-runner-aws.sh <YOUR_RUNNER_TOKEN>
+
+# Azure
+curl -O https://raw.githubusercontent.com/karthik-krishnan/mobile-test-automation-starter/main/ci/setup-android-runner-azure.sh
+bash setup-android-runner-azure.sh <YOUR_RUNNER_TOKEN>
 ```
 
 The script installs the Android SDK, emulator, Node.js, Appium, and the GitHub Actions runner agent — then registers it as a systemd service so it survives reboots. It takes about **10 minutes** to complete.
@@ -276,9 +336,15 @@ Select the platform to test: `android`, `ios`, or `both`.
 
 | Job | Infrastructure | Cost/run |
 |---|---|---|
-| Android | GCP n2-standard-4 (~15 min) | ~$0.01 |
+| Android (GCP) | n2-standard-4 (~15 min @ ~$0.19/hr) | ~$0.01 |
+| Android (AWS) | m5.xlarge (~15 min @ ~$0.19/hr) | ~$0.01 |
+| Android (Azure) | Standard_D4s_v3 (~15 min @ ~$0.19/hr) | ~$0.01 |
 | iOS | GitHub-hosted macOS (public repo) | **Free** |
-| **Total per run** | | **~$0.01** |
+
+> Stop the VM between runs to avoid idle charges:
+> - GCP: `gcloud compute instances stop appium-android-runner --zone=us-central1-a`
+> - AWS: `aws ec2 stop-instances --instance-ids YOUR_INSTANCE_ID`
+> - Azure: `az vm deallocate -g appium-runner-rg -n appium-android-runner`
 
 > The GCP instance costs ~$0.19/hr when running. Stop it between pipeline runs to avoid idle charges: `gcloud compute instances stop appium-android-runner --zone=us-central1-a`
 
@@ -287,13 +353,16 @@ Select the platform to test: `android`, `ios`, or `both`.
 ## Project Structure
 
 ```
-mobile_simulator_env/
-├── local-setup.sh               # starts emulator, simulator, and Appium locally
+mobile-test-automation-starter/
+├── local-setup.sh                       # macOS: starts emulator, simulator, and Appium
+├── local-setup.ps1                      # Windows: starts emulator and Appium (Android only)
 ├── ci/
-│   └── setup-android-runner-gcp.sh  # one-time setup for GCP Compute Engine runner
+│   ├── setup-android-runner-gcp.sh      # one-time GCP runner setup
+│   ├── setup-android-runner-aws.sh      # one-time AWS runner setup
+│   └── setup-android-runner-azure.sh    # one-time Azure runner setup
 ├── .github/
 │   └── workflows/
-│       └── ci.yml               # GitHub Actions pipeline definition
+│       └── ci.yml                       # GitHub Actions pipeline definition
 ├── tests/
 │   ├── package.json
 │   ├── wdio.android.conf.js
@@ -302,6 +371,6 @@ mobile_simulator_env/
 │   ├── specs/
 │   │   ├── android/setup-validation.spec.js
 │   │   └── ios/setup-validation.spec.js
-│   └── screenshots/             # failure screenshots (auto-saved)
+│   └── screenshots/                     # failure screenshots (auto-saved)
 └── logs/
 ```
