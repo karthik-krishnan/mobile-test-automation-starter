@@ -138,11 +138,13 @@ npm run test:ios
 
 ### What the tests validate
 
-Each suite runs 3 checks:
+The included tests are **sample / placeholder tests** — they exist to prove the environment is wired up correctly, not to test a real app. Replace them with your own test specs once the setup is working.
+
+Each sample suite runs 3 checks:
 
 1. Appium connects to the device and reports the correct platform
 2. The Settings app launches successfully
-3. The Home button works and the app returns to the foreground
+3. A basic UI interaction works (tap a menu item and go back)
 
 ---
 
