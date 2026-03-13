@@ -1,4 +1,4 @@
-# Mobile Test Automation Framework
+# Mobile Test Automation Starter Kit
 
 An end-to-end mobile test automation setup using **Appium** and **WebdriverIO**, covering local development on macOS and Windows, and a full CI pipeline with cloud infrastructure.
 
