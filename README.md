@@ -91,7 +91,7 @@ bash local-setup.sh
 
 To navigate to the repo folder in PowerShell, use `cd` followed by the path, for example:
 ```powershell
-cd C:\Users\YourName\Documents\appium-test-environment-sandbox
+cd C:\Users\YourName\Documents\mobile-test-automation-starter
 ```
 
 This will:
@@ -241,7 +241,7 @@ Copy the token shown (it expires after 1 hour).
 gcloud compute ssh appium-android-runner --zone=us-central1-a
 
 # Once inside the instance:
-curl -O https://raw.githubusercontent.com/karthik-krishnan/appium-test-environment-sandbox/main/ci/setup-android-runner-gcp.sh
+curl -O https://raw.githubusercontent.com/karthik-krishnan/mobile-test-automation-starter/main/ci/setup-android-runner-gcp.sh
 bash setup-android-runner-gcp.sh <YOUR_RUNNER_TOKEN>
 ```
 

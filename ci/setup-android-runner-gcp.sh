@@ -30,7 +30,7 @@
 set -euo pipefail
 
 RUNNER_TOKEN="${1:-}"
-GITHUB_REPO="https://github.com/karthik-krishnan/appium-test-environment-sandbox"
+GITHUB_REPO="https://github.com/karthik-krishnan/mobile-test-automation-starter"
 ANDROID_API="36"
 ANDROID_SYSTEM_IMAGE="system-images;android-${ANDROID_API};google_apis;x86_64"
 ANDROID_HOME="$HOME/android-sdk"
