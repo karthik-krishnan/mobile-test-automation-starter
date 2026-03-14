@@ -348,8 +348,6 @@ Select the platform to test: `android`, `ios`, or `both`.
 > - AWS: `aws ec2 stop-instances --instance-ids YOUR_INSTANCE_ID`
 > - Azure: `az vm deallocate -g appium-runner-rg -n appium-android-runner`
 
-> The GCP instance costs ~$0.19/hr when running. Stop it between pipeline runs to avoid idle charges: `gcloud compute instances stop appium-android-runner --zone=us-central1-a`
-
 ---
 
 ## Project Structure
