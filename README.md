@@ -5,8 +5,8 @@ An end-to-end mobile test automation setup using **Appium** and **WebdriverIO**,
 **What's included:**
 - One-command local setup for Android emulator + iOS Simulator (macOS) or Android only (Windows)
 - Appium test suites for Android and iOS
-- CI pipeline: Android on GCP Compute Engine, iOS on GitHub-hosted macOS runners
-- Infrastructure-as-code script to provision and register the GCP Android runner
+- CI pipeline: Android on a self-hosted Linux runner, iOS on GitHub-hosted macOS runners
+- Infrastructure-as-code scripts to provision and register an Android runner on GCP, AWS, or Azure
 
 > **iOS Simulator is macOS only.** On Windows, only Android tests are supported.
 
