@@ -29,8 +29,12 @@ describe('Android Setup Validation', () => {
     await driver.activateApp('com.android.settings');
     await driver.pause(1500);
 
-    // Tap on "Network & internet"
-    const menuItem = await driver.$('android=new UiSelector().textContains("Network")');
+    // Scroll to and tap "Network & internet" — UiScrollable handles cases where
+    // the item is off-screen on different Android versions / screen sizes
+    const menuItem = await driver.$(
+      'android=new UiScrollable(new UiSelector().scrollable(true))' +
+      '.scrollIntoView(new UiSelector().textContains("Network"))'
+    );
     await menuItem.click();
     await driver.pause(1500);
 

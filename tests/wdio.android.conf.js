@@ -37,13 +37,17 @@ export const config = {
     console.log(`\n🤖  Android tests → Appium at ${APPIUM_HOST}:${APPIUM_PORT}\n`);
   },
 
-  afterTest(test, _ctx, { error }) {
+  async afterTest(test, _ctx, { error }) {
     if (error) {
       const dir  = join(__dirname, 'screenshots');
       if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
       const file = join(dir, `FAIL_android_${test.title.replace(/\s+/g, '_')}_${Date.now()}.png`);
-      driver.saveScreenshot(file).catch(() => {});
-      console.log(`  📸 Screenshot: ${file}`);
+      try {
+        await driver.saveScreenshot(file);
+        console.log(`  📸 Screenshot: ${file}`);
+      } catch (e) {
+        console.log(`  ⚠️  Screenshot failed: ${e.message}`);
+      }
     }
   },
 };

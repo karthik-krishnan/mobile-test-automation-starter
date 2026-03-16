@@ -85,13 +85,17 @@ export const config = {
     console.log(`    iOS version:    ${IOS_VERSION}\n`);
   },
 
-  afterTest(test, _ctx, { error }) {
+  async afterTest(test, _ctx, { error }) {
     if (error) {
       const dir  = join(__dirname, 'screenshots');
       if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
       const file = join(dir, `FAIL_ios_${test.title.replace(/\s+/g, '_')}_${Date.now()}.png`);
-      driver.saveScreenshot(file).catch(() => {});
-      console.log(`📸 Screenshot saved: ${file}`);
+      try {
+        await driver.saveScreenshot(file);
+        console.log(`  📸 Screenshot: ${file}`);
+      } catch (e) {
+        console.log(`  ⚠️  Screenshot failed: ${e.message}`);
+      }
     }
   },
 };
