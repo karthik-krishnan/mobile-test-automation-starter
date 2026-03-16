@@ -198,6 +198,96 @@ APPIUM_PORT=4724 npm run test:android
 
 ---
 
+## Accessing the Emulator Visually on GCP
+
+By default the GCP runner is headless — no display. If your team needs to visually access the Android emulator (e.g. to set up a Google account, install an app, or do any one-time manual configuration), there are two options.
+
+---
+
+### Option A — Emulator VNC (Android screen only)
+
+Gives you a live view of just the Android emulator screen. Lighter weight, no desktop environment needed.
+
+**On the GCP VM:**
+
+```bash
+# Install a virtual display and VNC server
+sudo apt-get install -y xvfb x11vnc
+
+# Start a virtual display
+Xvfb :1 -screen 0 1280x800x24 &
+export DISPLAY=:1
+
+# Start the emulator on the virtual display (remove -no-window from the usual command)
+export ANDROID_HOME="$HOME/android-sdk"
+export PATH="$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$PATH"
+nohup emulator -avd CIDevice -no-audio -no-boot-anim -no-snapshot-save -accel on > ~/emulator.log 2>&1 &
+
+# Start VNC server (no password for simplicity — restrict via firewall instead)
+x11vnc -display :1 -forever -nopw -bg
+```
+
+**Open firewall port 5900 on GCP:**
+
+```bash
+gcloud compute firewall-rules create allow-vnc \
+  --allow tcp:5900 \
+  --source-ranges YOUR_IP/32 \
+  --target-tags github-runner
+```
+
+> Replace `YOUR_IP` with your actual IP. Restrict to your IP only — never open VNC to the world.
+
+**Connect from your laptop:** Use any VNC client (e.g. [RealVNC Viewer](https://www.realvnc.com/en/connect/download/viewer/), built-in Screen Sharing on macOS) and connect to `<GCP_VM_EXTERNAL_IP>:5900`.
+
+---
+
+### Option B — Ubuntu Desktop with RDP (full Linux desktop)
+
+Gives you a full Ubuntu desktop environment. More familiar if your team is used to working in a GUI, and lets you open Android Studio, a browser, or any other tool on the VM.
+
+**On the GCP VM:**
+
+```bash
+# Install desktop environment and RDP server
+sudo apt-get install -y ubuntu-desktop xrdp
+sudo systemctl enable xrdp
+sudo systemctl start xrdp
+
+# Set a password for your user (required for RDP login)
+sudo passwd $USER
+```
+
+**Open firewall port 3389 on GCP:**
+
+```bash
+gcloud compute firewall-rules create allow-rdp \
+  --allow tcp:3389 \
+  --source-ranges YOUR_IP/32 \
+  --target-tags github-runner
+```
+
+**Connect from your laptop:**
+- **Windows:** built-in Remote Desktop Connection (`mstsc`) → enter the VM's external IP
+- **macOS:** [Microsoft Remote Desktop](https://apps.apple.com/app/microsoft-remote-desktop/id1295203466) → add the VM's external IP
+
+Log in with your VM username and the password you set above. The Android emulator can then be started from a terminal inside the desktop session and will appear in a window.
+
+---
+
+### After one-time setup — snapshot the emulator
+
+Once you've completed your manual configuration (Google login, app install, etc.), save the emulator state so every future CI run starts from the configured snapshot:
+
+```bash
+# On the GCP VM, take a snapshot of the running emulator
+adb emu avd snapshot save configured-state
+```
+
+Then update the emulator start command in `ci/setup-android-runner-gcp.sh` (and the equivalent AWS/Azure scripts) to add `-snapshot configured-state` so CI always boots from the saved state instead of a cold start.
+
+---
+
 ## CI Pipeline
 
 The pipeline runs Android and iOS tests **in parallel** and is triggered manually. The workflow is defined in `.github/workflows/ci.yml`.
