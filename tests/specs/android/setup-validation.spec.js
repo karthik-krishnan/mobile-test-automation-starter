@@ -7,6 +7,18 @@
 //   3. UI interaction works (tap menu item, press back)
 // =============================================================================
 
+// Dismiss "System UI isn't responding" or similar ANR dialogs that can appear
+// on slow emulators (e.g. GCP). Taps "Wait" if the dialog is present.
+async function dismissSystemDialogs() {
+  try {
+    const waitBtn = await driver.$('android=new UiSelector().text("Wait")');
+    if (await waitBtn.isDisplayed()) {
+      await waitBtn.click();
+      await driver.pause(2000);
+    }
+  } catch (_) { /* no dialog present — carry on */ }
+}
+
 describe('Android Setup Validation', () => {
 
   it('should connect and report Android as the platform', async () => {
@@ -27,7 +39,10 @@ describe('Android Setup Validation', () => {
     // Ensure we're on main Settings page by restarting the app
     await driver.terminateApp('com.android.settings');
     await driver.activateApp('com.android.settings');
-    await driver.pause(1500);
+    await driver.pause(3000); // extra wait for slow GCP emulator to settle
+
+    // Dismiss any "System UI isn't responding" dialogs before interacting
+    await dismissSystemDialogs();
 
     // Scroll to and tap "Network & internet" — UiScrollable handles cases where
     // the item is off-screen on different Android versions / screen sizes
@@ -36,7 +51,10 @@ describe('Android Setup Validation', () => {
       '.scrollIntoView(new UiSelector().textContains("Network"))'
     );
     await menuItem.click();
-    await driver.pause(1500);
+    await driver.pause(2000);
+
+    // Dismiss any dialog that may appear after tapping
+    await dismissSystemDialogs();
 
     // Verify we navigated to a sub-menu
     const activity = await driver.getCurrentActivity();
