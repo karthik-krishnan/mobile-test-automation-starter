@@ -1,5 +1,7 @@
 # Mobile Test Automation Starter
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 An end-to-end mobile test automation setup using **Appium** and **WebdriverIO**, covering local development on macOS and Windows, and a full CI pipeline with cloud infrastructure.
 
 **What's included:**
