@@ -487,4 +487,4 @@ This project is licensed under the [MIT License](LICENSE).
 
 **Project metadata**
 
-Mobile Test Automation Starter · appium · webdriverio · android · ios · emulator · simulator · github actions · ci · gcp · aws · azure · self-hosted runner · uiautomator2 · xcuitest
+appium · webdriverio · mobile-testing · android-emulator · ios-simulator · uiautomator2 · xcuitest · self-hosted-runner · cloud-runner · gcp · aws · azure · appium-ci · ci-cd
