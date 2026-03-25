@@ -118,8 +118,8 @@ When everything is ready you'll see:
 ║   ✅  Everything is ready!                   ║
 ╠══════════════════════════════════════════════╣
 ║   Appium:   http://localhost:4723            ║
-║   Android:  emulator-5554                   ║
-║   iOS UDID: XXXXXXXX-XXXX-XXXX-XXXX-...    ║
+║   Android:  emulator-5554                    ║
+║   iOS UDID: XXXXXXXX-XXXX-XXXX-XXXX-...      ║
 ╚══════════════════════════════════════════════╝
 ```
 
